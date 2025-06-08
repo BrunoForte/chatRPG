@@ -1,0 +1,5 @@
+requests
+pytchat
+flask
+flask_socketio
+pytz
