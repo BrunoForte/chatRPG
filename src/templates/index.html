@@ -5,7 +5,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" 
         integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" 
         crossorigin="anonymous"></script>
@@ -57,7 +57,7 @@
 
             $('form#choose').submit(function(event) {
                 socket.emit('choose',
-                    {'chosen_user': $("form#choose input").val()});
+                    {'choosen_user': $("form#choose input").val()});
                 $("form#choose input").val('')
                 return false;
             });
@@ -77,16 +77,15 @@
 
         <div>
             <form id="pickrandom" method="POST" action="#" >
-                <input type="submit" value="Randomizar" id="pick-random-input" style="border-color: #ccc; border-radius: 10px;">
+                <input type="submit" value="random" id="pick-random-input" style="border-color: #ccc; border-radius: 10px;">
             </form>
             <form id="tts" method="POST" action="#">
                 <label for="tts">TTS 1:</label>
-                <input id="checkbox1" type="checkbox" class="tts-checkbox" style="text-align: left;" value="tts" name="tts" checked>
+                <input id="checkbox" type="checkbox" class="tts-checkbox" style="text-align: left;" value="tts" name="tts" checked>
             </form> 
             <br><br>
             <form id="choose" class="choose-box" method="POST" action="#">
-                <label for="tts">Escolhido:</label>
-                <input type="text" class="choose">
+                <input id="choose-box" type="text" class="choose" placeholder="type the user">
             </form> 
             <br><br>
             <select id="voicename">

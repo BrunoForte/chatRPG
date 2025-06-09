@@ -6,4 +6,4 @@ class Pool():
     max_users = 50
 
 def getRandom(user_pool):
-    return random.choice(list(user_pool.keys()))
+    return 
