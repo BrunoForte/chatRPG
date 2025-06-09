@@ -1,0 +1,16 @@
+from audio_player import AudioManager
+from azure_tts_manager import AzureTTSManager
+
+class TTSManager:
+
+    audio_manager = AudioManager()
+    azuretts_manager = AzureTTSManager()
+
+    user_voice_name = None
+
+    def __init__(self):
+        file_path = self.azuretts_manager.text_to_audio("Activated!") # Say something when the app starts
+        self.audio_manager.play_audio(file_path, True, True, True)
+
+    def update_voice_name(voice_name):
+        user_voice_name = voice_name

@@ -20,18 +20,8 @@
 
             socket.on('message_send', function(msg, cb) {
                 console.log("Got data: " + msg)
-
-                // DATA RECEIVED:
-                // message = string
-                // current_user = string
-
                 $('#user-message').text(msg.message);
                 $('#user-name').text(msg.current_user[0].toUpperCase() + msg.current_user.substr(1));
-
-                // Add an optional title to the beginning of username:
-                // $('#user-name-' + msg.user_number).text('Mayor' + '\n' + msg.current_user[0].toUpperCase() + msg.current_user.substr(1) + " as Shrek");
-                
-                // Space out the text to fill the box evenly
 
                 $('#user-name-box').textfill({
                      minFontPixels: 2,
@@ -51,7 +41,7 @@
             $('form#tts').change(function(event) {
                 console.log($('#checkbox').prop('checked'))
                 socket.emit('tts',
-                    {'checked': $('#checkbox1').prop('checked')});
+                    {'checked': $('#checkbox').prop('checked')});
                 return false;
             });
 
@@ -65,9 +55,6 @@
             $('#voicename').change(function() {
                 socket.emit('voicename', {'voice_name': $(this).val()})
             });
-            $('#voicestyle').change(function() {
-                socket.emit('voicestyle', {'voice_style': $(this).val()})
-            });
         });
     </script>
 </head>
@@ -79,14 +66,13 @@
             <form id="pickrandom" method="POST" action="#" >
                 <input type="submit" value="random" id="pick-random-input" style="border-color: #ccc; border-radius: 10px;">
             </form>
-            <form id="tts" method="POST" action="#">
-                <label for="tts">TTS 1:</label>
-                <input id="checkbox" type="checkbox" class="tts-checkbox" style="text-align: left;" value="tts" name="tts" checked>
-            </form> 
             <br><br>
             <form id="choose" class="choose-box" method="POST" action="#">
                 <input id="choose-box" type="text" class="choose" placeholder="type the user">
-            </form> 
+            </form>
+            <form id="tts" method="POST" action="#">
+                <input id="checkbox" type="checkbox" class="tts-checkbox" style="text-align: left;" value="tts" name="tts" checked>
+            </form>
             <br><br>
             <select id="voicename">
               <option value="pt-BR-BrendaNeural">Brenda</option>
@@ -97,18 +83,6 @@
               <option value="pt-PT-RaquelNeural">Raquel - PT</option>
               <option value="pt-PT-DuarteNeural">Duarte - PT</option>
               <option value="pt-PT-FernandaNeural">Fernanda - PT</option>
-            </select>
-            <select id="voicestyle">
-              <option value="random">random</option>
-              <option value="angry">angry</option>
-              <option value="cheerful">cheerful</option>
-              <option value="excited">excited</option>
-              <option value="hopeful">hopeful</option>
-              <option value="sad">sad</option>
-              <option value="shouting">shouting</option>
-              <option value="terrified">terrified</option>
-              <option value="unfriendly">unfriendly</option>
-              <option value="whispering">whispering</option>
             </select>
             <br><br>
             <div class="user-name-box" id="user-name-box"> 

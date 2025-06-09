@@ -1,3 +1,5 @@
+azure.cognitiveservices.speech
+audioplayer
 requests
 pytchat
 flask

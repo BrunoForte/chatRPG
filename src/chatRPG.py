@@ -1,6 +1,7 @@
 import random
 import pytchat
 import threading
+from voice_manager import TTSManager
 from user_pool import Pool
 from datetime import datetime, timedelta
 from flask import Flask, render_template
@@ -16,6 +17,7 @@ pool = Pool()
 date_format = '%Y-%m-%d %H:%M:%S'
 current_user = None
 tts_enabled = False
+tts_manager = TTSManager()
 
 class Pool():
     user_pool = {}
@@ -45,6 +47,13 @@ def chooseuser(value):
     socketio.emit('message_send',
         {'message': f'{current_user} was picked!',
         'current_user' :f'{current_user}'})
+
+@socketio.on('voicename')
+def choose_voice_name(value):
+    if(value['voice_name']) != None:
+        update_voice_name(value['voice_name'])
+        print('update voice name to: ' + value['voice_name'])
+
 
 def getUsers():
     
@@ -84,6 +93,9 @@ def randomUser():
     except Exception:
         print(f'{pool.user_pool}')
         return
+    
+def update_voice_name(voice_name):
+    tts_manager.update_voice_name(voice_name)
 
 if __name__ == '__main__':
         getUser_thread = threading.Thread(target=getUsers)
