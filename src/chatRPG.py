@@ -14,8 +14,8 @@ socketio = SocketIO
 socketio = SocketIO(app, async_mode='threading')
 date_format = '%Y-%m-%d %H:%M:%S'
 tts_manager = TTSManager()
-current_users = {CurrentUser()}
-current_user = CurrentUser()
+current_users = {}
+#current_user = CurrentUser()
 pool = Pool()
 
 @app.route("/")
@@ -28,8 +28,9 @@ def connect(): #when socket connects, send data confirming connection
 
 @socketio.on("tts")
 def toggletts(value):
-    print(f"TTS: received the value " + str(value['checked']))
-    current_user.tts_enabled = value['checked']
+    if value['user'].lower() in current_users.keys():
+        current_users[value['user'].lower()] = CurrentUser(tts_enabled= value['checked'])
+        print(f"TTS: received the value " + str(value['checked']))
 
 @socketio.on("pickrandom")
 def pickRandom():
@@ -37,30 +38,35 @@ def pickRandom():
 
 @socketio.on("choose")
 def chooseuser(value):
-    current_user.user = value.get('choosen_user', 'User Not Found!')
+    user = value.get('choosen_user', 'User Not Found!')
+    try:
+        current_users[user] = CurrentUser()
+    except Exception as e:
+        print(f"{e}")
     socketio.emit('message_send',
-        {'message': f'{current_user.user} was picked!',
-        'current_user' :f'{current_user.user}'})
+        {'message': f'{user} was picked!',
+        'current_user' :f'{user}'})
 
 @socketio.on('voicename')
 def choose_voice_name(value):
-    if(value['voice_name']) != None:
-        update_voice_name(value['voice_name'])
+    if value['user'].lower() in current_users.keys():
+        current_users[value['user'].lower()] = CurrentUser(voice_name = value['voice_name'])
         print('update voice name to: ' + value['voice_name'])
 
 def getUsers():
     
     while chat.is_alive():
         for c in chat.get().sync_items():
-            current_user.message = c.message
-            if c.author.name.lower() == current_user.user:
+            if c.author.name.lower() in current_users.keys():
+                user = c.author.name.lower()
+                current_users[user] = CurrentUser(message=c.message)
                 socketio.emit('message_send',
-                            {'message': f"{current_user.message}",
-                            'current_user': f"{current_user.user}"})
-                if current_user.tts_enabled:
-                    tts_manager.text_to_audio(current_user.message, current_user.voice_name)
+                            {'message': f"{current_users[user].message}",
+                            'current_user': f"{user}"})
+                if current_users[user].tts_enabled:
+                    tts_manager.text_to_audio(current_users[user].message, current_users[user].voice_name)
 
-            if current_user.message:
+            if c.message:
                 if c.author.name.lower() in pool.user_pool:
                     pool.user_pool.pop(c.author.name.lower())
                 pool.user_pool[c.author.name.lower()] = datetime.strptime(c.datetime, date_format)
@@ -77,17 +83,22 @@ def getUsers():
 def randomUser():
     try:
         user_pool = list(pool.user_pool.keys())
-        current_user.user = random.choice(user_pool)
+        user = random.choice(user_pool)
+        current_users[user] = CurrentUser()
+        pool.user_pool.pop(user)
         socketio.emit('message_send',
-                    {'message': f'{current_user.user} was picked!',
-                    'current_user' :f'{current_user.user}'})
-        print(f'random user is: ' + current_user.user)
+                    {'message': f'{user} foi selecionado!',
+                    'current_user' :f'{user}'})
+        print(f'random user is: ' + user)
     except Exception as e:
         print(f'cant get random user: {e}')
         return
     
-def update_voice_name(voice_name):
-    current_user.voice_name = voice_name
+def update_voice_name(user, voice_name):
+    current_users[user] = CurrentUser(voice_name = voice_name)
+
+def create_current_user(user_name):
+    return type(user_name, (object,), {'tts_enabled': True, 'voice_name': 'random', 'message': None})
 
 if __name__ == '__main__':
         getUser_thread = threading.Thread(target=getUsers)

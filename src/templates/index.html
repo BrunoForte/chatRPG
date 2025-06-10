@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>DougDoug Chat God App</title>
+    <title>RPG do chat do Carecoverso</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
@@ -40,8 +40,8 @@
 
             $('form#tts').change(function(event) {
                 console.log($('#checkbox').prop('checked'))
-                socket.emit('tts',
-                    {'checked': $('#checkbox').prop('checked')});
+                var userName = $("#user-name").text();
+                socket.emit('tts', {'user': userName, 'checked': $('#checkbox').prop('checked')});
                 return false;
             });
 
@@ -53,13 +53,14 @@
             });
 
             $('#voicename').change(function() {
-                socket.emit('voicename', {'voice_name': $(this).val()})
+                var userName = $("#user-name").text();
+                socket.emit('voicename', {'user': userName, 'voice_name': $(this).val()});
             });
         });
     </script>
 </head>
 <body>
-    <h1 style="margin-bottom: 10px;">Holy Chat God Selector</h1>
+    <h1 style="margin-bottom: 10px;">RPG do chat do Carecoverso</h1>
     <div style="display:flex; flex-direction:row;">
 
         <div>
@@ -75,7 +76,7 @@
             </form>
             <br><br>
             <select id="voicename">
-              <option value="random">Voz Aleatórea</option>
+              <option value="random" selected>Voz Aleatórea</option>
               <option value="pt-BR-BrendaNeural">Brenda</option>
               <option value="pt-BR-AntonioNeural">Antônio</option>
               <option value="pt-BR-FranciscaNeural">Francisca</option>
