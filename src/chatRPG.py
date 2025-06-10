@@ -8,14 +8,13 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 
-chat = pytchat.create(video_id="fG_DN3QJoAA")
+chat = pytchat.create(video_id="0ZpNYS6NRkk")
 app = Flask(__name__)
 socketio = SocketIO
 socketio = SocketIO(app, async_mode='threading')
 date_format = '%Y-%m-%d %H:%M:%S'
 tts_manager = TTSManager()
 current_users = {}
-#current_user = CurrentUser()
 pool = Pool()
 
 @app.route("/")
@@ -24,45 +23,31 @@ def home():
 
 @socketio.event
 def connect(): #when socket connects, send data confirming connection
-    socketio.emit('message_send', {'message': "Conected!", 'current_user': "User"})
-
-@socketio.on("tts")
-def toggletts(value):
-    if value['user'].lower() in current_users.keys():
-        current_users[value['user'].lower()] = CurrentUser(tts_enabled= value['checked'])
-        print(f"TTS: received the value " + str(value['checked']))
-
-@socketio.on("pickrandom")
-def pickRandom():
-    randomUser()
+    sendMessage('User', 'Conected!')
 
 @socketio.on("choose")
 def chooseuser(value):
-    user = value.get('choosen_user', 'User Not Found!')
-    try:
-        current_users[user] = CurrentUser()
-    except Exception as e:
-        print(f"{e}")
-    socketio.emit('message_send',
-        {'message': f'{user} was picked!',
-        'current_user' :f'{user}'})
+    chooseUser(value.get('choosen_user', 'User Not Found!'))
+    
+@socketio.on("pickrandom")
+def pick_Random():
+    randomUser()
+
+@socketio.on("tts")
+def toggle_tts(value):
+    updateTts(value['user'], value['checked'])
 
 @socketio.on('voicename')
 def choose_voice_name(value):
-    if value['user'].lower() in current_users.keys():
-        current_users[value['user'].lower()] = CurrentUser(voice_name = value['voice_name'])
-        print('update voice name to: ' + value['voice_name'])
+    updateVoiceName(value['user'], value['voice_name'])
 
 def getUsers():
-    
     while chat.is_alive():
         for c in chat.get().sync_items():
             if c.author.name.lower() in current_users.keys():
                 user = c.author.name.lower()
                 current_users[user] = CurrentUser(message=c.message)
-                socketio.emit('message_send',
-                            {'message': f"{current_users[user].message}",
-                            'current_user': f"{user}"})
+                sendMessage(user, current_users[user].message)
                 if current_users[user].tts_enabled:
                     tts_manager.text_to_audio(current_users[user].message, current_users[user].voice_name)
 
@@ -78,27 +63,58 @@ def getUsers():
                         print(f"{oldest_user} was popped due to hitting max users")
                     else:
                         print(f"{oldest_user} was popped due to not talking for {pool.seconds_active} seconds")
+            print(f'{pool.user_pool}')
     print(f'chat closed.')
+
+def chooseUser(user):
+    try:
+        if user in current_users.keys():
+            selectedUser(user, f'{user} foi selecionado!')
+        else:
+            current_users[user] = CurrentUser()
+            newUser(user, f'{user} foi selecionado!')
+        print(f'usuário selecionado foi: ' + user)
+    except Exception as e:
+        print(f"{e}")
+        return
 
 def randomUser():
     try:
-        user_pool = list(pool.user_pool.keys())
-        user = random.choice(user_pool)
-        current_users[user] = CurrentUser()
-        pool.user_pool.pop(user)
-        socketio.emit('message_send',
-                    {'message': f'{user} foi selecionado!',
-                    'current_user' :f'{user}'})
-        print(f'random user is: ' + user)
+        user = random.choice(list(pool.user_pool.keys())) 
+        if user in current_users.keys():
+            selectedUser(user, f'{user} foi selecionado!')
+        else:
+            current_users[user] = CurrentUser()
+            newUser(user, f'{user} foi selecionado!')
+        print(f'usuário randomizado foi: ' + user)
     except Exception as e:
         print(f'cant get random user: {e}')
         return
-    
-def update_voice_name(user, voice_name):
-    current_users[user] = CurrentUser(voice_name = voice_name)
 
-def create_current_user(user_name):
-    return type(user_name, (object,), {'tts_enabled': True, 'voice_name': 'random', 'message': None})
+def updateTts(user, checked):
+    if user.lower() in current_users.keys():
+        current_users[user.lower()] = CurrentUser(tts_enabled= checked)
+        print(f"TTS: received the value " + str(checked))
+
+def updateVoiceName(user, voice_name):
+    if user.lower() in current_users.keys():
+        current_users[user.lower()] = CurrentUser(voice_name = voice_name)
+        print('update voice name to: ' + voice_name)
+
+def newUser(user, message):
+    socketio.emit('new_user', {
+        'user': f'{user}',
+        'message': f'{message}'})
+
+def selectedUser(user, message):
+    socketio.emit('selected_user', {
+        'user': f'{user}',
+        'message': f'{message}'})
+    
+def sendMessage(user, message):
+    socketio.emit('message_send', {
+        'user': f'{user}',
+        'message': f'{message}'})
 
 if __name__ == '__main__':
         getUser_thread = threading.Thread(target=getUsers)
