@@ -1,6 +1,7 @@
 azure.cognitiveservices.speech
 audioplayer
 requests
+soundfile
 mutagen
 pytchat
 flask
