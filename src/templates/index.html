@@ -20,12 +20,12 @@
             function createNewFormInstance(formId, message){
                 var newFormHtml = `
                 <div data-id="${formId}" class="dynamic-form">
-                    <button id="${formId}-random" class="form-button" style="border-radius: 10px;">random</button>
+                    <button id="${formId}-random" class="random-button" style="border-radius: 10px;">random</button>
                     <form id="${formId}-choose" class="choose-box" method="POST" action="#">
                         <input id="${formId}-choose-text" type="text" class="choose" placeholder="type the user"></input>
                     </form>
-                    <input id="${formId}-tts" type="checkbox" class="tts-checkbox" checked></input>
-                    <select id="${formId}-voicename">
+                    <input id="${formId}-tts" class="tts" type="checkbox" checked></input>
+                    <select id="${formId}-voicename" class="voicename">
                         <option value="random" selected>Voz Aleatórea</option>
                         <option value="pt-BR-BrendaNeural">Brenda</option>
                         <option value="pt-BR-AntonioNeural">Antônio</option>
@@ -61,23 +61,28 @@
                     cb();
             });
 
-            $('#random').on('click', function() {
-                socket.emit("pickrandom");
+            $('#dynamic-form-container').on('click', '.random-button', function() {
+                socket.emit("pickrandom", {'old_id': $(this).attr('id').slice(0,-6)});
                 return false;
             });
 
-            $('#tts').change(function(event) {
-                socket.emit('tts', {'user': userName, 'checked': $(this).prop('checked')});
+            $('.tts').change(function(event) {
+                socket.emit('tts', {'user': userName, 
+                    'checked': $(this).prop('checked'), 
+                    'old_id': $(this).attr('id').slice(0,-4)});
             });
 
-            $('form#choose').submit(function(event) {
-                socket.emit('choose', {'choosen_user': $("#choose-text").val()});
-                $("#choose-text").val('');
+            $('form.choose-form').submit(function(event) {
+                socket.emit('choose', {'choosen_user': $(".choose-text").val(),
+                    'old_id': $(this).attr('id').slice(0,-11)});
+                $(".choose-text").val('');
                 return false;
             });
 
-            $('#voicename').change(function() {
-                socket.emit('voicename', {'user': userName, 'voice_name': $(this).val()});
+            $('.voicename').change(function() {
+                socket.emit('voicename', {'user': userName, 
+                    'voice_name': $(this).val(),
+                    'old_id': $(this).attr('id').slice(0,-10)});
             });
         });
     </script>
@@ -87,9 +92,9 @@
     <div style="display:flex; flex-direction:row;">
         <div id="dynamic-form-container">
             <div class="dynamic-form" id="original">
-                <button id="random" class="form-button" style="border-radius: 10px;">random</button>
-                <form id="choose" class="choose-box" method="POST" action="#">
-                    <input type="text" id="choose-text" class="choose" placeholder="type the user"></input>
+                <button id="random" class="random-button" style="border-radius: 10px;">random</button>
+                <form id="choose-form" class="choose-form" method="POST" action="#">
+                    <input type="text" id="choose-text" class="choose-text" placeholder="type the user"></input>
                 </form>
                 <span class="user-name" id="user-name">User</span>
                 <span class="user-message" id="user-message" >Mensagens</span>
