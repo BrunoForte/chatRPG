@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 
-chat = pytchat.create(video_id='fPGRSlmnZCw')
+chat = pytchat.create(video_id='bHI-5OUa2CU')
 app = Flask(__name__)
 socketio = SocketIO
 socketio = SocketIO(app, async_mode='threading')
@@ -45,14 +45,14 @@ def choose_voice_name(value):
 def getUsers():
     while chat.is_alive():
         for c in chat.get().sync_items():
-
-            #BROKEN
-            """if selected_list.find(c.author.name.lower()):
-                user = (c.author.name.lower(), c.message)
-                selected_list.insert()
-                if selected_list[user].tts_enabled:
-                    tts_manager.text_to_audio(selected_list[user].message, selected_list[user].voice_name)"""
-
+            for sublista in selected_list.list:
+                if sublista.user_name == c.author.name.lower():
+                    user = updateUser(sublista, 'message', c.message)
+                    #selected_list.changeSelectedUser(user, selected_list.list.index(user))
+                    socketio.emit('update_user', CurrentUser.serialize(user, selected_list.list.index(user)))
+                    if user.tts_enabled:
+                        tts_manager.text_to_audio(user.message, user.voice_name)
+                    
             if c.message:
                 if active_list.find(c.author.name.lower()):
                     active_list.list.remove(c.author.name.lower())
@@ -81,10 +81,12 @@ def chooseUser(user, old_id):
 def randomizeUser(old_id):
     if len(active_list.list):
         user = active_list.randomize(selected_list.list)
-        chooseUser(createNewUser(user[0]), old_id)
-        return
+        if user is not None:
+            chooseUser(createNewUser(user), old_id)
+        else:
+            return print(f'Nenhuma randomização disponivel')
     else:
-        return print(f'cant get user from empty list')
+        return print(f'Não é possível randomizar de uma lista vazia')
 
 def updateSelectedUser(user, field, value):
     updateUser(user, field, value)
