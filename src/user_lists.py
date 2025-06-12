@@ -8,10 +8,12 @@ class ActiveList():
         return name in self.list
     
     def randomize(self, selected_list):
-        while True:
+            test = selected_list
             randomized = random.choice(self.list)
-            if randomized not in selected_list:
-                return randomized
+            #RANDOMIZAR NÃO REMOVE O QUE JÁ ESTÁ NA LISTA
+            if randomized[0] in selected_list:
+                randomized = random.choice(self.list)
+            return randomized
 
 class SelectedList():
     def __init__(self, list):
@@ -20,5 +22,5 @@ class SelectedList():
     def find(self, name):
         return name in self.list
         
-    def changeSelectedUser(self, newUser, oldUser):
-        self.list[oldUser] = newUser
+    def changeSelectedUser(self, new_user, old_user):
+        self.list[old_user] = new_user

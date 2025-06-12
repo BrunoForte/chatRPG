@@ -45,13 +45,16 @@
             
             socket.on('new_user', function(data) {
                 userName = data.user;
-                createNewFormInstance(userName, data.message);
-                $(`#${userName}-user-name`).text(userName.charAt(0).toUpperCase() + userName.substr(1));
+                createNewFormInstance(data.old_id, data.message);
+                $(`#${data.old_id}-user-name`).text(userName.charAt(0).toUpperCase() + userName.substr(1));
             })
 
-            socket.on('selected_user', function(data){
-                data.user;
-                data.message;
+            socket.on('update_user', function(data){
+                const target = $(`div[data-id='${data.old_id}']`);
+                target.find(`#${data.old_id}-tts`).prop('checked', data.tts);
+                target.find(`#${data.old_id}-voicename`).select(data.voice);
+                target.find(`#${data.old_id}-user-name`).text(data.user.charAt(0).toUpperCase() + data.user.substr(1));
+                target.find(`#${data.old_id}-user-message`).text(data.message);
             })
 
             socket.on('message_send', function(msg, cb) {
@@ -62,7 +65,7 @@
             });
 
             $('#dynamic-form-container').on('click', '.random-button', function() {
-                socket.emit("pickrandom", {'old_id': $(this).attr('id').slice(0,-6)});
+                socket.emit("pickrandom", {'old_id': $(this).attr('id').slice(0,-7)});
                 return false;
             });
 
@@ -97,7 +100,7 @@
                     <input type="text" id="choose-text" class="choose-text" placeholder="type the user"></input>
                 </form>
                 <span class="user-name" id="user-name">User</span>
-                <span class="user-message" id="user-message" >Mensagens</span>
+                <span class="user-message" id="user-message" ></span>
             </div>
         </div>
     </div>

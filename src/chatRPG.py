@@ -1,14 +1,13 @@
 import pytchat
 import threading
 from currentUser import CurrentUser, createNewUser, updateUser
-from userType import UserType
 from voice_manager import TTSManager
 from user_lists import ActiveList, SelectedList
 from datetime import datetime, timedelta
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 
-chat = pytchat.create(video_id='4NcJP_FZ1Lk')
+chat = pytchat.create(video_id='fPGRSlmnZCw')
 app = Flask(__name__)
 socketio = SocketIO
 socketio = SocketIO(app, async_mode='threading')
@@ -25,7 +24,7 @@ def home():
 
 @socketio.event
 def connect(): #when socket connects, send data confirming connection
-    sendMessage(CurrentUser('User', message='Conectado!'))
+    socketio.emit('message_send', {'message': "Conecteado!", 'user': "User"})
 
 @socketio.on('choose')
 def chooseuser(value):
@@ -46,12 +45,13 @@ def choose_voice_name(value):
 def getUsers():
     while chat.is_alive():
         for c in chat.get().sync_items():
-            if selected_list.find(c.author.name.lower()):
+
+            #BROKEN
+            """if selected_list.find(c.author.name.lower()):
                 user = (c.author.name.lower(), c.message)
                 selected_list.insert()
-                #sendMessage(user)
                 if selected_list[user].tts_enabled:
-                    tts_manager.text_to_audio(selected_list[user].message, selected_list[user].voice_name)
+                    tts_manager.text_to_audio(selected_list[user].message, selected_list[user].voice_name)"""
 
             if c.message:
                 if active_list.find(c.author.name.lower()):
@@ -69,28 +69,25 @@ def getUsers():
             print(f'{active_list.list}')
     print(f'chat closed.')
 
-def chooseUser(user, oldId):
-    if oldId:
-        selected_list.changeSelectedUser(user, oldId)
-        sendMessage(user)
+def chooseUser(user, old_id):
+    if old_id.isdigit():
+        selected_list.changeSelectedUser(user, int(old_id))
+        socketio.emit('update_user', CurrentUser.serialize(user, old_id))
     else:
         selected_list.list.append(user)
-        sendMessage(user)
+        socketio.emit('new_user', CurrentUser.serialize(user, selected_list.list.index(user)))
     return
 
-def randomizeUser(oldId):
-    user = active_list.randomize(selected_list.list)
-    chooseUser(createNewUser(user[0]), oldId)
-    return
+def randomizeUser(old_id):
+    if len(active_list.list):
+        user = active_list.randomize(selected_list.list)
+        chooseUser(createNewUser(user[0]), old_id)
+        return
+    else:
+        return print(f'cant get user from empty list')
 
 def updateSelectedUser(user, field, value):
     updateUser(user, field, value)
-    
-def sendMessage(user):
-    if user.user_type == UserType.NEW:
-        socketio.emit('new_user', CurrentUser.serialize(user))
-    else:
-        socketio.emit('message_send', CurrentUser.serialize(user))
 
 if __name__ == '__main__':
         getUser_thread = threading.Thread(target=getUsers)
