@@ -8,13 +8,14 @@ class ActiveList():
         return name in self.list
     
     def randomize(self, selected_list):
-            test = selected_list
-            randomized = random.choice(self.list)
-            #RANDOMIZAR NÃO REMOVE O QUE JÁ ESTÁ NA LISTA
-            if randomized[0] in selected_list:
-                randomized = random.choice(self.list)
-            return randomized
-
+            selected_user_names = {user.user_name for user in selected_list}
+            all_available_names = {item[0] for item in self.list}
+            available_names = list(all_available_names - selected_user_names)
+            if not available_names:
+                print('WARNING: Todos os usuários disponívels já foram selecionados, nenhuma randomização disponivel')
+                return None
+            return random.choice(available_names)
+            
 class SelectedList():
     def __init__(self, list):
         self.list = list

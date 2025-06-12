@@ -5,6 +5,9 @@ class CurrentUser:
         self.voice_name = voice_name
         self.message = message
 
+    def __repr__(self):
+         return f"CurrentUser(user_name='{self.user_name}', tts_enabled={self.tts_enabled}, voice_name='{self.voice_name}', message='{self.message}')"
+         
     def serialize(self, old_id = None):
         if old_id is not None:
             return {'user': self.user_name, 
@@ -18,9 +21,13 @@ class CurrentUser:
                     'message': self.message, 
                     'voice': self.voice_name }
     
-def createNewUser(user):
-        return CurrentUser(user, message=f'{user} foi selecionado!')
+def createNewUser(user_name):
+        return CurrentUser(user_name, message=f'{user_name} foi selecionado!')
 
-def updateUser(user, field, value):
-    user = CurrentUser(user, field = value)
-    return user
+def updateUser(user_instance, field_name, new_value):
+    if hasattr(user_instance, field_name): # Verifica se o atributo existe na instância
+        setattr(user_instance, field_name, new_value) # Define o valor do atributo
+        print(f"Instância de '{user_instance.user_name}' atualizada: {field_name} = {new_value}")
+    else:
+        print(f"AVISO: Atributo '{field_name}' não encontrado na instância de CurrentUser.")
+    return user_instance
